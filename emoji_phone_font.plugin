@@ -1,0 +1,38 @@
+from base_plugin import BasePlugin, HookResult, HookStrategy
+from typing import Any
+
+__id__          = "emjidrr_r2"
+__name__        = "يخلي ايموجيات ب خط موبايل"
+__description__ = "يخلي رسالة اذا بيها ايموجي راح يندز بشكل خط تلفون ويكدر اي شخص يشوفه بدون ما يصير مال ايفون"
+__author__      = "@DRR_R2"
+__version__     = "1.0"
+__icon__        = "exteraPlugins/1"
+__app_version__ = ">=12.5.1"
+
+class SystemEmojiFontPlugin(BasePlugin):
+    def on_plugin_load(self):
+        self.add_on_send_message_hook()
+
+    def on_plugin_unload(self):
+        pass
+
+    def on_send_message_hook(self, account: int, params: Any) -> HookResult:
+        if not params or not hasattr(params, "message"):
+            return HookResult()
+
+        original_text = getattr(params, "message", None)
+        if not isinstance(original_text, str) or not original_text:
+            return HookResult()
+
+        modified_text = ""
+        for char in original_text:
+            if ord(char) > 0x1F000:
+                modified_text += char + chr(0x200D) + chr(0xFE0E)
+            else:
+                modified_text += char
+
+        if modified_text != original_text:
+            params.message = modified_text
+            return HookResult(strategy=HookStrategy.MODIFY, params=params)
+
+        return HookResult()
